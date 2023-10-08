@@ -321,6 +321,41 @@ CON_COMMAND_CHAT(map, "change map")
 	g_pEngineServer2->ServerCommand(buf);
 }
 
+CON_COMMAND_CHAT(rcon, "remote control")
+{
+	if (!player)
+		return;
+
+	int iCommandPlayer = player->GetPlayerSlot();
+
+	ZEPlayer *pPlayer = g_playerManager->GetPlayer(iCommandPlayer);
+
+	if (!pPlayer->IsAdminFlagSet(ADMFLAG_RCON))
+	{
+		ClientPrint(player, HUD_PRINTTALK, CHAT_PREFIX "You don't have access to this command.");
+		return;
+	}
+
+	if (args.ArgC() < 2)
+	{
+		ClientPrint(player, HUD_PRINTTALK, CHAT_PREFIX "Usage: !rcon <command/cvar>");
+		return;
+	}
+
+	char *commandStrings = const_cast<char *>(args.GetCommandString());
+	const char *firstSpaceInCommand = strchr(commandStrings, ' ');
+
+	if(firstSpaceInCommand == nullptr)
+	{
+		ClientPrint(player, HUD_PRINTTALK, CHAT_PREFIX "Usage: !rcon <command/cvar>");
+		return;
+	}
+
+	const char *command = firstSpaceInCommand + 1;
+
+	g_pEngineServer2->ServerCommand(command);
+}
+
 void CAdminSystem::LoadAdmins()
 {
 	m_vecAdmins.Purge();
